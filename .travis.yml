@@ -4,6 +4,7 @@ services:
   - postgresql
 addons:
   postgresql: "9.4"
+  postgresql: "9.6"
 before_script:
   - psql -U postgres -c "create user decide password 'decide'"
   - psql -U postgres -c "create database test_decide owner decide"
@@ -11,11 +12,19 @@ before_script:
 language: python
 python:
   - "3.6"
+  - "3.8"
 install:
   - pip install -r requirements.txt
   - pip install codacy-coverage
 script:
   - cd decide
-  - coverage run --branch --source=. ./manage.py test --keepdb --with-xunit
+  - cp local_settings_travis.py local_settings.py
+  - coverage run --branch --source=. ./manage.py test authentication --keepdb
+  - coverage run --branch --source=. ./manage.py test census --keepdb
   - coverage xml
   - python-codacy-coverage -r coverage.xml
+deploy:
+  provider: heroku
+  app: myappdecidefork
+  strategy: git
+  api_key: $HEROKU_AUTH_TOKEN
