@@ -4,20 +4,23 @@ services:
   - postgresql
 addons:
   postgresql: "9.4"
+  postgresql: "9.6"
 before_script:
   - psql -U postgres -c "create user decide password 'decide'"
   - psql -U postgres -c "create database test_decide owner decide"
   - psql -U postgres -c "ALTER USER decide CREATEDB"
 language: python
 python:
-  - "3.7"
+  - "3.6"
+  - "3.8"
 install:
   - pip install -r requirements.txt
   - pip install codacy-coverage
 script:
   - cd decide
   - cp local_settings_travis.py local_settings.py
-  - coverage run --branch --source=. ./manage.py test store --keepdb
+  - coverage run --branch --source=. ./manage.py test authentication --keepdb
+  - coverage run --branch --source=. ./manage.py test census --keepdb
   - coverage xml
   - python-codacy-coverage -r coverage.xml
 deploy:
